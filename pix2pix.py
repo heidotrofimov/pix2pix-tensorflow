@@ -15,8 +15,6 @@ import time
 
 tf.compat.v1.disable_eager_execution()
 
-print(tf.__version__)
-print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 parser = argparse.ArgumentParser()
 parser.add_argument("--input_dir", help="path to folder containing images")
 parser.add_argument("--validation_input", help="path to folder containing validation images")
@@ -40,7 +38,7 @@ parser.add_argument("--batch_size", type=int, default=1, help="number of images 
 parser.add_argument("--which_direction", type=str, default="AtoB", choices=["AtoB", "BtoA"])
 parser.add_argument("--ngf", type=int, default=64, help="number of generator filters in first conv layer")
 parser.add_argument("--ndf", type=int, default=64, help="number of discriminator filters in first conv layer")
-parser.add_argument("--scale_size", type=int, default=256, help="scale images to this size before cropping to 256x256")
+parser.add_argument("--scale_size", type=int, default=286, help="scale images to this size before cropping to 256x256")
 parser.add_argument("--flip", dest="flip", action="store_true", help="flip images horizontally")
 parser.add_argument("--no_flip", dest="flip", action="store_false", help="don't flip images horizontally")
 parser.set_defaults(flip=True)
@@ -52,8 +50,8 @@ parser.add_argument("--gan_weight", type=float, default=1.0, help="weight on GAN
 # export options
 parser.add_argument("--output_filetype", default="png", choices=["png", "jpeg"])
 a = parser.parse_args()
-print(a.flip)
-EPS = 1e-7
+
+EPS = 1e-12
 CROP_SIZE = 256
 
 Examples = collections.namedtuple("Examples", "paths, validation_paths, inputs, validation_inputs, targets, validation_targets, count, steps_per_epoch")
@@ -481,7 +479,6 @@ def create_model(inputs, targets, validation_inputs,validation_targets):
         gen_loss_GAN = tf.reduce_mean(input_tensor=-tf.math.log(predict_fake + EPS))
         gen_loss_L1 = tf.reduce_mean(input_tensor=tf.abs(targets - outputs))
         gen_loss_L1_validation = tf.reduce_mean(input_tensor=tf.abs(validation_targets - validation_outputs))
-        #gen_loss_L1_validation = tf.reduce_mean(input_tensor=tf.abs(targets - outputs))
         gen_loss = gen_loss_GAN * a.gan_weight + gen_loss_L1 * a.l1_weight
 
     with tf.compat.v1.name_scope("discriminator_train"):
